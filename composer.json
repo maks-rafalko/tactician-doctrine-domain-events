@@ -25,6 +25,6 @@
     "require": {
         "php": ">=5.4",
         "bornfreee/tactician-domain-events": "^0.1.0",
-        "doctrine/orm": "^2.5"
+        "doctrine/orm": "^2.2"
     }
 }
