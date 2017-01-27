@@ -16,7 +16,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "BornFree\\TacticianDoctrineDomainEvent\\Test\\": "tests/src/"
+            "BornFree\\TacticianDoctrineDomainEvent\\Test\\": "tests/"
         }
     },
     "require-dev": {
