@@ -59,7 +59,10 @@ class CollectsEventsFromEntities implements EventSubscriber, ContainsRecordedEve
      */
     public function releaseEvents()
     {
-        return $this->collectedEvents;
+        $events = $this->collectedEvents;
+        $this->eraseEvents();
+
+        return $events;
     }
 
     /**
