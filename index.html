@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Tactician Domain Events - Doctrine Bridge</title>
+
+        <link rel="stylesheet" href="https://bornfreee.github.io/tactician-doctrine-domain-events/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://bornfreee.github.io/tactician-doctrine-domain-events/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://bornfreee.github.io/tactician-doctrine-domain-events/css/highlight.dark.css">
+        <link rel="stylesheet" href="https://bornfreee.github.io/tactician-doctrine-domain-events/css/main.css">
+    </head>
+    <body>
+
+        <header class="navbar navbar-default navbar-fixed-top">
+
+            <a class="navbar-brand" href="https://bornfreee.github.io/tactician-doctrine-domain-events/">
+                Tactician Domain Events - Doctrine Bridge
+                <small class="hidden-xs hidden-sm">
+                    A Doctrine Event Listener that collects Domain Events from the Entities
+                </small>
+            </a>
+
+                            <a href="https://github.com/borNfreee/tactician-doctrine-domain-events">
+                    <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+                </a>
+            
+        </header>
+
+        <main class="container-fluid">
+            <div class="row">
+
+                
+                    <nav id="sidebar" class="col-sm-3 col-lg-2" role="navigation">
+
+                        <ul class="nav nav-pills nav-stacked">
+                                                            <li class="">
+                                    <a href="https://bornfreee.github.io/tactician-domain-events">
+                                        Domain events
+                                    </a>
+                                </li>
+                                                            <li class="">
+                                    <a href="https://bornfreee.github.io/tactician-domain-events-bundle">
+                                        Symfony Integration
+                                    </a>
+                                </li>
+                                                    </ul>
+
+                    </nav>
+
+                
+                <section id="content" class="col-sm-offset-3 col-lg-offset-2 col-sm-9 col-lg-10">
+                    <h1 id="tactician-domain-events---doctrine-bridge">Tactician Domain Events - Doctrine Bridge</h1>
+<p><a href="https://travis-ci.org/borNfreee/tactician-doctrine-domain-events"><img src="https://travis-ci.org/borNfreee/tactician-doctrine-domain-events.svg?branch=master" alt="Build Status" /></a>
+<a href="https://codecov.io/gh/borNfreee/tactician-doctrine-domain-events"><img src="https://codecov.io/gh/borNfreee/tactician-doctrine-domain-events/branch/master/graph/badge.svg" alt="codecov" /></a>
+<a href="https://scrutinizer-ci.com/g/borNfreee/tactician-domain-events/?branch=master"><img src="https://scrutinizer-ci.com/g/borNfreee/tactician-domain-events/badges/quality-score.png?b=master" alt="Scrutinizer Code Quality" /></a>
+<a href="https://packagist.org/packages/bornfree/tactician-doctrine-domain-events"><img src="https://poser.pugx.org/bornfree/tactician-doctrine-domain-events/v/stable" alt="Latest Stable Version" /></a></p>
+<p>The bridge to provide Domain Events handling with Tactician command bus and Doctrine ORM</p>
+<h2 id="installation">Installation</h2>
+<p>Install via composer</p>
+<pre><code class="language-bash">composer require bornfree/tactician-doctrine-domain-events</code></pre>
+<h2 id="usage">Usage</h2>
+<p>Using the <a href="https://bornfreee.github.io/tactician-domain-events/doc/domain_events.html#record-events-in-entity">events recorder facilities</a> you can let Doctrine ORM collect domain events and subsequently let the <code>EventDispatcher</code> handle them.</p>
+<p>Make sure that your entities implement the <code>ContainsRecordedMessages</code> interface. Use the
+<code>EventRecorderCapabilities</code> trait from <a href="https://bornfreee.github.io/tactician-domain-events">Tactician Domain Events</a> library to conveniently record events from inside the entity:</p>
+<pre><code class="language-php">use BornFree\TacticianDomainEvent\Recorder\ContainsRecordedEvents;
+use BornFree\TacticianDomainEvent\Recorder\EventRecorderCapabilities;
+
+class Task implements ContainsRecordedMessages
+{
+    use EventRecorderCapabilities;
+
+    public function __construct($name)
+    {
+        $this-&gt;record(new TaskWasCreated($name));
+    }
+}</code></pre>
+<p>Then set up the <em>event recorder</em> for Doctrine entities:</p>
+<pre><code class="language-php">use BornFree\TacticianDoctrineDomainEvent\EventListener\CollectsEventsFromEntities;
+
+$eventRecorder = new CollectsEventsFromEntities();
+
+$entityManager-&gt;getConnection()-&gt;getEventManager()-&gt;addEventSubscriber($eventRecorder);</code></pre>
+<blockquote>
+<h5 id="syfmony-integration">Syfmony integration</h5>
+<p>This listener will be registered automatically with Symfony, see the <a href="https://bornfreee.github.io/tactician-domain-events-bundle">documentation</a></p>
+</blockquote>
+<p>The event recorder will loop over all the entities that were involved in the last database transaction and collect their
+internally recorded events.</p>
+<p>After a database transaction was completed successfully these events should be handled by the <code>EventDispatcher</code>. This is done by
+a specialized middleware, which should be added to the command bus <em>before</em> the middleware that is responsible for
+handling the transaction.</p>
+<pre><code class="language-php">use League\Tactician\CommandBus;
+use League\Tactician\Doctrine\ORM\TransactionMiddleware;
+use namespace BornFree\TacticianDomainEvent\Middleware\ReleaseRecordedEventsMiddleware;
+
+// see the previous sections about $eventRecorder and $eventDispatcher
+$releaseRecordedEventsMiddleware = new ReleaseRecordedEventsMiddleware($eventRecorder, $eventDispatcher);
+
+$commandBus = new CommandBus(
+    [
+        $releaseRecordedEventsMiddleware, // it should be before transaction middleware
+        $transactionMiddleware,
+        $commandHandlerMiddleware
+    ]
+);</code></pre>
+<h2 id="license">License</h2>
+<p>Copyright (c) 2017, Maks Rafalko</p>
+<p>Under MIT license, read LICENSE file.</p>
+                </section>
+
+            </div>
+        </main>
+
+        <footer>
+            <div class="container-fluid">
+                <p class="text-muted">
+                    website generated with <a href="http://couscous.io" title="Markdown website generator">Couscous</a>
+                </p>
+            </div>
+        </footer>
+
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//yastatic.net/highlightjs/8.2/highlight.min.js"></script>
+
+        <script>
+            $(function() {
+                $("section>h1").wrap('<div class="page-header" />');
+                // Syntax highlighting
+                hljs.initHighlightingOnLoad();
+            });
+        </script>
+
+    </body>
+</html>
