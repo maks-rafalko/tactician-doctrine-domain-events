@@ -61,9 +61,9 @@
 <p>Install via composer</p>
 <pre><code class="language-bash">composer require bornfree/tactician-doctrine-domain-events</code></pre>
 <h2 id="usage">Usage</h2>
-<p>Using the <a href="https://bornfreee.github.io/tactician-domain-events/doc/domain_events.html#record-events-in-entity">events recorder facilities</a> you can let Doctrine ORM collect domain events and subsequently let the <code>EventDispatcher</code> handle them.</p>
+<p>Using the <a href="https://maks-rafalko.github.io/tactician-domain-events/doc/domain_events.html#record-events-in-entity">events recorder facilities</a> you can let Doctrine ORM collect domain events and subsequently let the <code>EventDispatcher</code> handle them.</p>
 <p>Make sure that your entities implement the <code>ContainsRecordedMessages</code> interface. Use the
-<code>EventRecorderCapabilities</code> trait from <a href="https://bornfreee.github.io/tactician-domain-events">Tactician Domain Events</a> library to conveniently record events from inside the entity:</p>
+<code>EventRecorderCapabilities</code> trait from <a href="https://maks-rafalko.github.io/tactician-domain-events">Tactician Domain Events</a> library to conveniently record events from inside the entity:</p>
 <pre><code class="language-php">use BornFree\TacticianDomainEvent\Recorder\ContainsRecordedEvents;
 use BornFree\TacticianDomainEvent\Recorder\EventRecorderCapabilities;
 
@@ -84,7 +84,7 @@ $eventRecorder = new CollectsEventsFromEntities();
 $entityManager-&gt;getConnection()-&gt;getEventManager()-&gt;addEventSubscriber($eventRecorder);</code></pre>
 <blockquote>
 <h5 id="syfmony-integration">Syfmony integration</h5>
-<p>This listener will be registered automatically with Symfony, see the <a href="https://bornfreee.github.io/tactician-domain-events-bundle">documentation</a></p>
+<p>This listener will be registered automatically with Symfony, see the <a href="https://maks-rafalko.github.io/tactician-domain-events-bundle">documentation</a></p>
 </blockquote>
 <p>The event recorder will loop over all the entities that were involved in the last database transaction and collect their
 internally recorded events.</p>
